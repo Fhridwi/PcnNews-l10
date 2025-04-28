@@ -37,7 +37,7 @@
 
                     <div class="mb-3">
                         <label for="content" class="form-label">Konten</label>
-                        <textarea name="content" class="form-control" id="content" rows="6" required>{{ old('content', $article->content) }}</textarea>
+                        <textarea name="content" class="form-control" id="editor" rows="6" required>{{ old('content', $article->content) }}</textarea>
                     </div>
 
                     <div class="mb-3">
@@ -105,18 +105,25 @@
 </div>
 @endsection
 
-@section('scripts')
-{{-- CKEditor for Content --}}
-<script src="https://cdn.ckeditor.com/4.21.0/standard/ckeditor.js"></script>
-<script>
-    CKEDITOR.replace('content');
-</script>
 
-{{-- Optional: Select2 for better tag/category UX --}}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    $('#tags').select2({ placeholder: "Pilih tag", allowClear: true });
-    $('#categories').select2({ placeholder: "Pilih kategori", allowClear: true });
-</script>
-@endsection
+@push('js')
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                ckfinder: {
+                    uploadUrl: '{{ route('media.upload') }}',
+                    options: {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        
+        </script>
+
+
+@endpush

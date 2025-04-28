@@ -64,33 +64,37 @@
 
 <div class="row">
     <!-- Chart/Graph Section -->
-    <div class="col-lg-6">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4>Grafik Artikel per Bulan</h4>
+                <h4 class="card-title">Grafik View Artikel per Bulan</h4> 
             </div>
-            <div class="card-body">
-                <div class="text-center py-5">
+            <div class="card-body" style="position: relative; min-height: 250px;">
+                <div id="chart-container" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="mt-2">Memuat data grafik...</p>
                 </div>
+                <canvas id="viewChart" style="display: none; width: 100%; height: 300px;"></canvas>
             </div>
         </div>
     </div>
-    <div class="col-lg-6">
+    
+    
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h4>Grafik Artikel per Bulan</h4>
+                <h4 class="card-title">Grafik View Artikel per Bulan</h4> 
             </div>
-            <div class="card-body">
-                <div class="text-center py-5">
+            <div class="card-body" style="position: relative; min-height: 250px;">
+                <div id="chart-container" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="mt-2">Memuat data grafik...</p>
                 </div>
+                {{-- <canvas id="articleChart" style="display: none; width: 100%; height: 300px;"></canvas> --}}
             </div>
         </div>
     </div>
@@ -132,7 +136,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-striped" id="dataTable">
                         <thead>
                             <tr>
                                 <th>Judul</th>
@@ -141,35 +145,20 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @for($i = 1; $i <= 13; $i++)
+                        <tbody id="articleBody">
+                            @for($i = 0; $i < 13; $i++)
                             <tr>
-                                <td>
-                                    <div class="placeholder-wave">
-                                        <span class="placeholder col-8"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-wave">
-                                        <span class="placeholder col-4"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-wave">
-                                        <span class="placeholder col-6"></span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="placeholder-wave">
-                                        <span class="placeholder col-3"></span>
-                                    </div>
-                                </td>
+                                <td><div class="placeholder-wave"><span class="placeholder col-8"></span></div></td>
+                                <td><div class="placeholder-wave"><span class="placeholder col-4"></span></div></td>
+                                <td><div class="placeholder-wave"><span class="placeholder col-6"></span></div></td>
+                                <td><div class="placeholder-wave"><span class="placeholder col-3"></span></div></td>
                             </tr>
                             @endfor
                         </tbody>
                     </table>
                 </div>
             </div>
+            
         </div>
     </div>
 
@@ -181,19 +170,27 @@
             </div>
             <div class="card-body">
                 <ul class="list-group">
-                    @for($i = 1; $i <= 3; $i++)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="placeholder-wave">
-                            <span class="placeholder col-5"></span>
-                        </div>
-                        <div class="spinner-grow spinner-grow-sm text-secondary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </li>
-                    @endfor
+                    @forelse ($users as $user)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ $user->name }} - {{ $user->email }}</span>
+                            <span class="badge bg-secondary">{{ \Carbon\Carbon::parse($user->last_login_at)->diffForHumans() }}</span>
+                        </li>
+                    @empty
+                        @for($i = 1; $i <= 3; $i++)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="placeholder-wave">
+                                    <span class="placeholder col-5"></span>
+                                </div>
+                                <div class="spinner-grow spinner-grow-sm text-secondary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </li>
+                        @endfor
+                    @endforelse
                 </ul>
             </div>
         </div>
+        
 
         <!-- Aktivitas Terkini -->
         <div class="card">
@@ -229,4 +226,137 @@
             })
         });
     </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch("{{ route('chart.data') }}")
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('viewChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Jumlah View',
+                        data: data.values,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        barThickness: 30,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('chart-container').style.display = 'none'; // hide spinner
+            document.getElementById('viewChart').style.display = 'block'; // show canvas
+        })
+        .catch(error => {
+            console.error('Error fetching chart data:', error);
+            document.getElementById('chart-container').innerHTML = '<p class="text-danger">Gagal memuat grafik.</p>';
+        });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch("{{ route('chart.articles') }}") // Ganti dengan route kamu
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('articleChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels, // contoh: ["Januari", "Februari", "Maret", ...]
+                        datasets: [{
+                            label: 'Jumlah Artikel',
+                            data: data.data, // contoh: [5, 8, 12, 7, ...]
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                            barThickness: 30,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+    
+                document.getElementById('chart-container').style.display = 'none'; 
+                document.getElementById('articleChart').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+                document.getElementById('chart-container').innerHTML = '<p class="text-danger">Gagal memuat grafik.</p>';
+            });
+    });
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('articles/fetch')
+            .then(response => response.json())
+            .then(data => {
+                let tbody = document.getElementById('articleBody');
+                tbody.innerHTML = ''; // Hapus skeleton loader
+    
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center">Tidak ada artikel.</td></tr>`;
+                } else {
+                    data.forEach(article => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${article.title}</td>
+                                <td>${article.publish_status}</td>
+                                <td>${new Date(article.published_at).toLocaleDateString('id-ID')}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-primary">Detail</a>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Gagal mengambil data:', error);
+                let tbody = document.getElementById('articleBody');
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data.</td></tr>`;
+            });
+    });
+    </script>
+    
+
+<script>
+    $(document).ready(function() {
+     $('#dataTable').DataTable();
+ });
+</script>
+
 @endpush

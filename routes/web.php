@@ -4,7 +4,9 @@ use App\Http\Controllers\Backend\ArticleController;
 use App\Http\Controllers\Backend\CategorieController;
 use App\Http\Controllers\Backend\DashboardController;
 use App\Http\Controllers\Backend\ProfilController;
+use App\Http\Controllers\Backend\TagController;
 use App\Http\Controllers\Backend\UserController;
+use App\Http\Controllers\Backend\MediaController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -33,13 +35,22 @@ Route::middleware('auth')->group(function () {
 });
 
 
-Route::prefix('admin')->middleware(['auth', 'role:admin,editor,author'])->group(function () {
+Route::prefix('admin')->middleware(['web','auth', 'role:admin,editor,author'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.admin');
-    Route::resource('user', UserController::class);
-    Route::resource('category', CategorieController::class);
-    Route::resource('article', ArticleController::class);
-    Route::resource('profil', ProfilController::class);
+    //chard dashboard
+    Route::get('/chart-data', [DashboardController::class, 'chartData'])->name('chart.data');
+    Route::get('/chart/articles', [DashboardController::class, 'getArticleChart'])->name('chart.articles');
+    Route::get('/articles/fetch', [DashboardController::class, 'fetchArticles']);
+    Route::get('/dashboard', [DashboardController::class, 'getLastLoggedInUsers'])->name('dashboard');
 
+
+
+    Route::resource('user', UserController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('category', CategorieController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('article', ArticleController::class);
+    Route::resource('profil', ProfilController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::post('media/upload', [MediaController::class, 'upload'])->name('media.upload');
+    Route::resource('tag', TagController::class)->only(['index', 'store', 'update', 'destroy']);
 });
 
 

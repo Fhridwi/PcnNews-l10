@@ -23,7 +23,6 @@
             <div class="card-body">
                 <form action="{{ route('article.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-
                     <div class="mb-3">
                         <label for="title" class="form-label">Judul</label>
                         <input type="text" name="title" class="form-control" id="title" value="{{ old('title') }}" required>
@@ -97,4 +96,24 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+    <script>
+ClassicEditor
+    .create(document.querySelector('#editor'), {
+        ckfinder: {
+            uploadUrl: '{{ route('media.upload') }}',
+            options: {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error(error);
+    });
+
+</script>
+@endpush
 

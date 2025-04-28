@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Categorie;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -79,8 +80,36 @@ class HomeController extends Controller
      */
     public function show($slug)
     {
+        // Ambil artikel berdasarkan slug
         $article = Article::where('slug', $slug)->firstOrFail();
-        return view('frontend.article.article_show', compact('article'));
+    
+        // Ambil kategori dari artikel
+        $categories = $article->categories;
+    
+        // Ambil artikel terkait berdasarkan kategori yang sama
+        $relatedArticles = Article::whereHas('categories', function ($query) use ($categories) {
+            $query->whereIn('id', $categories->pluck('id'));
+        })
+        ->where('id', '!=', $article->id)  // Menghindari artikel yang sedang dibaca
+        ->take(5)  // Menampilkan 5 artikel terkait
+        ->get();
+    
+        // Ambil artikel yang sedang tren berdasarkan jumlah views (misalnya)
+        $trendingArticles = Article::orderBy('view_count', 'desc')->take(5)->get();
+    
+        // Ambil semua kategori untuk ditampilkan
+        $allCategories = Categorie::all();
+
+         // Ambil 5 kategori teratas berdasarkan jumlah artikel terbanyak
+        $topCategories = Categorie::withCount('articles')
+        ->orderByDesc('articles_count') // Urutkan berdasarkan jumlah artikel terbanyak
+        ->take(5) // Ambil hanya 5 kategori teratas
+        ->get();
+    
+        // Ambil tag populer
+        $popularTags = Tag::withCount('articles')->orderBy('articles_count', 'desc')->take(5)->get();
+    
+        return view('frontend.article.article_show', compact('topCategories','article', 'relatedArticles', 'trendingArticles', 'allCategories', 'popularTags'));
     }
     
 

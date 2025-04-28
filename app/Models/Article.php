@@ -21,8 +21,10 @@ class Article extends Model
         return $this->belongsToMany(Categorie::class, 'article_categories', 'article_id', 'categories_id');
     }
 
-
-    
+    public function profile()
+    {
+        return $this->belongsTo(Profile::class, 'user_id');
+    }
 
     public function tags()
     {

@@ -34,8 +34,8 @@
             </a>
         </li>
 
-        <li class="sidebar-item">
-            <a href="#" class='sidebar-link'>
+        <li class="sidebar-item {{ request()->routeIs('tag.*') ? 'active' : '' }}">
+            <a href="{{ route('tag.index') }}" class='sidebar-link'>
                 <i class="bi bi-tags-fill"></i>
                 <span>Tags</span>
             </a>

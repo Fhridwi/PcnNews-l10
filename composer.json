@@ -10,6 +10,8 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "symfony/css-selector": "^7.2",
+        "symfony/dom-crawler": "^7.2",
         "unisharp/laravel-filemanager": "^2.10",
         "yajra/laravel-datatables-oracle": "^10.3.1"
     },

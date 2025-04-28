@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
+use Symfony\Component\DomCrawler\Crawler;
+
 
 
 class ArticleController extends Controller
@@ -65,50 +67,77 @@ class ArticleController extends Controller
         $tags = Tag::all();
         return view('backend.article.article_create', compact('categories', 'tags'));
     }
-    // Store a newly created article in the database
-    public function store(ArticleRequest $request)
-    {
-        // Validasi data
-        $data = $request->validated();
+    // Store a newly created article in the databas
 
-        if ($request->hasFile('cover_image_url')) {
-            $file = $request->file('cover_image_url');
-            $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+public function store(ArticleRequest $request)
+{
+    // Validasi data
+    $data = $request->validated();
 
-            if (!Storage::exists('public/back')) {
-                Storage::makeDirectory('public/back');
-            }
+    // Upload cover image jika ada
+    if ($request->hasFile('cover_image_url')) {
+        $file = $request->file('cover_image_url');
+        $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
 
-            $file->storeAs('public/back', $fileName);
-
-            $data['cover_image_url'] = 'storage/back/' . $fileName;
+        if (!Storage::exists('public/back')) {
+            Storage::makeDirectory('public/back');
         }
 
-        // Membuat artikel baru
-        $article = Article::create([
-            'title' => $data['title'],
-            'slug' => Str::slug($data['title']),
-            'summary' => $data['summary'],
-            'content' => $data['content'],
-            'cover_image_url' => $data['cover_image_url'] ?? null,
-            'publish_status' => $data['publish_status'],
-            'published_at' => $data['published_at'],
-            'view_count' => 0,
-            'author_id' => Auth::user()->id,
-        ]);
+        $file->storeAs('public/back', $fileName);
 
-        // Menambahkan kategori ke artikel
-        if ($request->has('categories')) {
-            $article->categories()->attach($request->categories);
-        }
-
-        // Menambahkan tag ke artikel
-        if ($request->has('tags')) {
-            $article->tags()->attach($request->tags);
-        }
-
-        return redirect()->route('article.index')->with('success', 'Artikel berhasil dibuat.');
+        $data['cover_image_url'] = 'storage/back/' . $fileName;
     }
+
+    // Buat artikel baru
+    $article = Article::create([
+        'title' => $data['title'],
+        'slug' => Str::slug($data['title']),
+        'summary' => $data['summary'],
+        'content' => $data['content'],
+        'cover_image_url' => $data['cover_image_url'] ?? null,
+        'publish_status' => $data['publish_status'],
+        'published_at' => now(), // menggunakan waktu sekarang
+        'view_count' => 0,
+        'author_id' => Auth::id(),
+    ]);
+
+    // Tambahkan kategori ke artikel
+    if ($request->has('categories')) {
+        $article->categories()->attach($request->categories);
+    }
+
+    // Tambahkan tag ke artikel
+    if ($request->has('tags')) {
+        $article->tags()->attach($request->tags);
+    }
+
+    // Cek gambar di dalam konten artikel
+    $crawler = new Crawler($data['content']);
+    $images = $crawler->filter('img')->each(function (Crawler $node) {
+        return $node->attr('src');
+    });
+
+    if ($images) {
+        foreach ($images as $src) {
+            // Ambil nama file dari src
+            $filePath = str_replace(asset('storage/') . '/', '', $src);
+
+            // Cari media
+            $media = \App\Models\Media::where('file_path', 'like', "%$filePath%")->first();
+
+            if ($media) {
+                // Hubungkan media ke article_media
+                $article->media()->attach($media->id, [
+                    'role' => 'content_image',
+                    'sort_order' => 1,
+                ]);
+            }
+        }
+    }
+
+    return redirect()->route('article.index')->with('success', 'Artikel berhasil dibuat.');
+}
+
 
 
     public function show($id)
