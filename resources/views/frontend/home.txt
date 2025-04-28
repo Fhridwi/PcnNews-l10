@@ -1,0 +1,468 @@
+@extends('frontend.layouts.app')
+
+@php
+    use Carbon\Carbon;
+@endphp
+
+@push('css')
+    <style>
+        /* Sidebar Styles */
+.sidebar-widget {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.widget-title {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.widget-title h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Category List */
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-list li {
+    margin-bottom: 8px;
+}
+
+.category-list li a {
+    display: block;
+    padding: 8px 12px;
+    color: #555;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.category-list li a:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+    padding-left: 15px;
+}
+
+/* Social Media Links */
+.social-media-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link i {
+    margin-right: 8px;
+}
+
+.social-link.facebook { background-color: #3b5998; }
+.social-link.twitter { background-color: #1da1f2; }
+.social-link.instagram { background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); }
+.social-link.youtube { background-color: #ff0000; }
+
+.social-link:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Tag Cloud */
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background-color: #f1f1f1;
+    color: #555;
+    border-radius: 20px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.tag:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Recent Comments */
+.recent-comments {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recent-comments li {
+    padding: 12px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.recent-comments li:last-child {
+    border-bottom: none;
+}
+
+.comment-author {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.comment-author a {
+    color: #333;
+    text-decoration: none;
+}
+
+.comment-author a:hover {
+    color: #007bff;
+}
+
+.comment-excerpt {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.comment-date {
+    font-size: 12px;
+    color: #999;
+}
+    </style>
+@endpush
+
+@section('content')
+<main>
+    <!-- Trending Area Start -->
+    <div class="trending-area fix">
+        <div class="container">
+            <div class="trending-main">
+                <!-- Trending Tittle -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="trending-tittle">
+                            <strong>Berita Terkini</strong>
+                            <div class="trending-animated">
+                                <ul id="js-news" class="js-hidden">
+                                    @foreach($trending_articles as $trending)
+                                    <li class="news-item">{{ $trending->title }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8">
+                        <!-- Trending Top -->
+                        @if($latest_post)
+                        <div class="trending-top mb-30">
+                            <div class="trend-top-img">
+                                <img src="{{ asset($latest_post->cover_image_url) }}" alt="{{ $latest_post->title }}" class="img-fluid">
+                                <div class="trend-top-cap">
+                                    <div class="categories">
+                                        @foreach($latest_post->categories as $category)
+                                        <span class="badge badge-info">{{ $category->name }}</span>
+                                        @endforeach
+                                    </div>
+                                    <h2><a href="{{ route('article.show', $latest_post->slug) }}">{{ $latest_post->title }}</a></h2>
+                                    <div class="post-meta d-flex flex-wrap align-items-center">
+                                        <div class="meta-item me-3">
+                                            <i class="fas fa-user"></i>
+                                            <span>{{ $latest_post->author->name }}</span>
+                                        </div>
+                                        <div class="meta-item me-3">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>{{ \Carbon\Carbon::parse($latest_post->published_at)->format('d M Y') }}</span>
+                                        </div>
+                                        <div class="meta-item me-3">
+                                            <i class="fas fa-eye"></i>
+                                            <span>{{ number_format($latest_post->view_count) }} views</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Trending Bottom -->
+                        <div class="trending-bottom">
+                            <div class="row">
+                                @foreach($recent_articles->take(3) as $article)
+                                <div class="col-lg-4">
+                                    <div class="single-bottom mb-35">
+                                        <div class="trend-bottom-img mb-30">
+                                            <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                                        </div>
+                                        <div class="trend-bottom-cap">
+                                            @if($article->categories->isNotEmpty())
+                                            <span class="color{{ $loop->iteration }}">{{ $article->categories->first()->name }}</span>
+                                            @endif
+                                            <h4><a href="{{ route('article.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right content -->
+                    <div class="col-lg-4">
+                        @foreach($recent_articles->slice(3, 5) as $article)
+                        <div class="trand-right-single d-flex">
+                            <div class="trand-right-img">
+                                <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                            </div>
+                            <div class="trand-right-cap">
+                                @if($article->categories->isNotEmpty())
+                                <span class="color{{ $loop->iteration }}">{{ $article->categories->first()->name }}</span>
+                                @endif
+                                <h4><a href="{{ route('articles.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Trending Area End -->
+    
+    <!-- Whats New Start -->
+    <section class="whats-news-area pt-50 pb-20">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="row d-flex justify-content-between">
+                        <div class="col-lg-3 col-md-3">
+                            <div class="section-tittle mb-30">
+                                <h3>Berita Pesantren</h3>
+                            </div>
+                        </div>
+                        <div class="col-lg-9 col-md-9">
+                            <div class="properties__button">
+                                <nav>                                                                     
+                                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                        <a class="nav-item nav-link active" id="nav-all-tab" data-toggle="tab" href="#nav-all" role="tab" aria-controls="nav-all" aria-selected="true">Semua</a>
+                                        @foreach($popular_categories as $category)
+                                        <a class="nav-item nav-link" id="nav-{{ $category->slug }}-tab" data-toggle="tab" href="#nav-{{ $category->slug }}" role="tab" aria-controls="nav-{{ $category->slug }}" aria-selected="false">{{ $category->name }}</a>
+                                        @endforeach
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="tab-content" id="nav-tabContent">
+                                <!-- All Articles Tab -->
+                                <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+                                    <div class="whats-news-caption">
+                                        <div class="row">
+                                            @foreach($recent_articles as $article)
+                                            <div class="col-lg-6 col-md-6">
+                                                <div class="single-what-news mb-100">
+                                                    <div class="what-img">
+                                                        <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                                                    </div>
+                                                    <div class="what-cap">
+                                                        @if($article->categories->isNotEmpty())
+                                                        <span class="color1">{{ $article->categories->first()->name }}</span>
+                                                        @endif
+                                                        <h4><a href="{{ route('article.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Category Tabs -->
+                                @foreach($popular_categories as $category)
+                                <div class="tab-pane fade" id="nav-{{ $category->slug }}" role="tabpanel" aria-labelledby="nav-{{ $category->slug }}-tab">
+                                    <div class="whats-news-caption">
+                                        <div class="row">
+                                            @foreach($category->articles()->where('publish_status', 'published')->where('published_at', '<=', Carbon::now())->orderBy('published_at', 'desc')->take(4)->get() as $article)
+                                            <div class="col-lg-6 col-md-6">
+                                                <div class="single-what-news mb-100">
+                                                    <div class="what-img">
+                                                        <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                                                    </div>
+                                                    <div class="what-cap">
+                                                        <span class="color1">{{ $category->name }}</span>
+                                                        <h4><a href="{{ route('article.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <!-- Social Media Section -->
+                    <div class="section-tittle mb-40">
+                        <h3>Ikuti Kami</h3>
+                    </div>
+                    <div class="single-follow mb-45">
+                        <div class="single-box">
+                            @php
+                                $social_links = json_decode(optional(auth()->user())->profile->social_links ?? '{}', true);
+                            @endphp
+                            
+                            @if(!empty($social_links['facebook']))
+                            <div class="follow-us d-flex align-items-center">
+                                <div class="follow-social">
+                                    <a href="{{ $social_links['facebook'] }}" target="_blank"><img src="{{ asset('assets/img/news/icon-fb.png') }}" alt="Facebook"></a>
+                                </div>
+                                <div class="follow-count">  
+                                    <span>8,045</span>
+                                    <p>Pengikut</p>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if(!empty($social_links['twitter']))
+                            <div class="follow-us d-flex align-items-center">
+                                <div class="follow-social">
+                                    <a href="{{ $social_links['twitter'] }}" target="_blank"><img src="{{ asset('assets/img/news/icon-tw.png') }}" alt="Twitter"></a>
+                                </div>
+                                <div class="follow-count">
+                                    <span>5,230</span>
+                                    <p>Pengikut</p>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if(!empty($social_links['instagram']))
+                            <div class="follow-us d-flex align-items-center">
+                                <div class="follow-social">
+                                    <a href="{{ $social_links['instagram'] }}" target="_blank"><img src="{{ asset('assets/img/news/icon-ins.png') }}" alt="Instagram"></a>
+                                </div>
+                                <div class="follow-count">
+                                    <span>12,045</span>
+                                    <p>Pengikut</p>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if(!empty($social_links['youtube']))
+                            <div class="follow-us d-flex align-items-center">
+                                <div class="follow-social">
+                                    <a href="{{ $social_links['youtube'] }}" target="_blank"><img src="{{ asset('assets/img/news/icon-yo.png') }}" alt="YouTube"></a>
+                                </div>
+                                <div class="follow-count">
+                                    <span>3,045</span>
+                                    <p>Subscriber</p>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- Featured Video or Advertisement -->
+                    <div class="news-poster d-none d-lg-block">
+                        <img src="{{ asset('assets/img/news/news_card.jpg') }}" alt="Featured Content" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Whats New End -->
+    
+    <!-- Weekly Top News Start -->
+    <div class="weekly2-news-area weekly2-pading gray-bg">
+        <div class="container">
+            <div class="weekly2-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-tittle mb-30">
+                            <h3>Berita Populer Minggu Ini</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="weekly2-news-active dot-style d-flex dot-style">
+                            @foreach($trending_articles as $article)
+                            <div class="weekly2-single">
+                                <div class="weekly2-img">
+                                    <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                                </div>
+                                <div class="weekly2-caption">
+                                    @if($article->categories->isNotEmpty())
+                                    <span class="color1">{{ $article->categories->first()->name }}</span>
+                                    @endif
+                                    <p>{{ \Carbon\Carbon::parse($article->published_at)->format('d M Y') }}</p>
+                                    <h4><a href="{{ route('article.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>           
+    <!-- End Weekly-News -->
+    
+    <!-- Recent Articles start -->
+    <div class="recent-articles">
+        <div class="container">
+           <div class="recent-wrapper">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-tittle mb-30">
+                            <h3>Artikel Terbaru</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="recent-active dot-style d-flex dot-style">
+                            @foreach($recent_articles as $article)
+                            <div class="single-recent mb-100">
+                                <div class="what-img">
+                                    <img src="{{ asset($article->cover_image_url) }}" alt="{{ $article->title }}" class="img-fluid">
+                                </div>
+                                <div class="what-cap">
+                                    @if($article->categories->isNotEmpty())
+                                    <span class="color1">{{ $article->categories->first()->name }}</span>
+                                    @endif
+                                    <h4><a href="{{ route('article.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+           </div>
+        </div>
+    </div>           
+    <!--Recent Articles End -->
+</main>
+@endsection
