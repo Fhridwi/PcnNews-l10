@@ -217,14 +217,19 @@
 
 @push('js')
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(function() {
-                document.getElementById('totalArtikel').innerHTML = "{{ $totalArtikel }}"
-                document.getElementById('totalPublished').innerHTML = "{{ $totalPublished }}"
-                document.getElementById('totalUser').innerHTML = "{{ $totalUser }}"
-                document.getElementById('totalKategori').innerHTML = "{{ $totalKategori }}"
+       document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        fetch("{{ url('admin/dashboard/stats') }}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('totalArtikel').innerHTML = data.totalArtikel;
+                document.getElementById('totalPublished').innerHTML = data.totalPublished;
+                document.getElementById('totalUser').innerHTML = data.totalUser;
+                document.getElementById('totalKategori').innerHTML = data.totalKategori;
             })
-        });
+            .catch(error => console.error('Error fetching dashboard stats:', error));
+    }, 100);
+});
     </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>

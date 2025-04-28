@@ -12,19 +12,17 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        $totalArtikel = Article::count();
-        $totalPublished = Article::where('publish_status', 'published')->count();
-        $totalUser = User::count();
-        $totalKategori = Categorie::count();
 
-        return view('backend.dashboard.dashboard', compact(
-            'totalArtikel',
-            'totalPublished',
-            'totalUser',
-            'totalKategori'
-        ));
+    public function getDashboardStats()
+    {
+        $stats = [
+            'totalArtikel' => Article::count(),
+            'totalPublished' => Article::where('publish_status', 'published')->count(),
+            'totalUser' => User::count(),
+            'totalKategori' => Categorie::count(),
+        ];
+    
+        return response()->json($stats);
     }
 
     public function chartData()

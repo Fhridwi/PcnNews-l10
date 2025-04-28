@@ -42,6 +42,8 @@ Route::prefix('admin')->middleware(['web','auth', 'role:admin,editor,author'])->
     Route::get('/chart/articles', [DashboardController::class, 'getArticleChart'])->name('chart.articles');
     Route::get('/articles/fetch', [DashboardController::class, 'fetchArticles']);
     Route::get('/dashboard', [DashboardController::class, 'getLastLoggedInUsers'])->name('dashboard');
+    Route::get('/dashboard/stats', [DashboardController::class, 'getDashboardStats']);
+
 
 
 
