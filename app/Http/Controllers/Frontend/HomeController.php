@@ -80,7 +80,7 @@ class HomeController extends Controller
     public function show($slug)
     {
         $article = Article::where('slug', $slug)->firstOrFail();
-        return view('frontend.article.show', compact('article'));
+        return view('frontend.article.article_show', compact('article'));
     }
     
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Backend\ArticleController;
 use App\Http\Controllers\Backend\CategorieController;
 use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\ProfilController;
 use App\Http\Controllers\Backend\UserController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\ProfileController;
@@ -37,7 +38,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,editor,author'])->group(
     Route::resource('user', UserController::class);
     Route::resource('category', CategorieController::class);
     Route::resource('article', ArticleController::class);
-
+    Route::resource('profil', ProfilController::class);
 
 });
 
