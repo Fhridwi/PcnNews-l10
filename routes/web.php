@@ -36,16 +36,18 @@ Route::middleware('auth')->group(function () {
 
 
 Route::prefix('admin')->middleware(['web','auth', 'role:admin,editor,author'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.admin');
-    //chard dashboard
-    Route::get('/chart-data', [DashboardController::class, 'chartData'])->name('chart.data');
-    Route::get('/chart/articles', [DashboardController::class, 'getArticleChart'])->name('chart.articles');
-    Route::get('/articles/fetch', [DashboardController::class, 'fetchArticles']);
-    Route::get('/dashboard', [DashboardController::class, 'getLastLoggedInUsers'])->name('dashboard');
-    Route::get('/dashboard/stats', [DashboardController::class, 'getDashboardStats']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    
+    // Chart routes
+    Route::get('/dashboard/stats', [DashboardController::class, 'getDashboardStats'])->name('admin.dashboard.stats');
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->name('admin.dashboard.chart.data');
+    Route::get('/dashboard/chart-articles', [DashboardController::class, 'getArticleChart'])->name('admin.dashboard.chart.articles');
+    
+    // Article fetch
+    Route::get('/dashboard/articles/fetch', [DashboardController::class, 'fetchArticles'])->name('admin.dashboard.articles.fetch');
 
-
-
+    // Users last login
+    Route::get('/dashboard/last-login', [DashboardController::class, 'getLastLoggedInUsers'])->name('admin.dashboard.last-login');
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('category', CategorieController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -54,6 +56,7 @@ Route::prefix('admin')->middleware(['web','auth', 'role:admin,editor,author'])->
     Route::post('media/upload', [MediaController::class, 'upload'])->name('media.upload');
     Route::resource('tag', TagController::class)->only(['index', 'store', 'update', 'destroy']);
 });
+
 
 
 require __DIR__.'/auth.php';

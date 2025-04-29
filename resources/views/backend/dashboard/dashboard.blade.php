@@ -216,81 +216,83 @@
 @endsection
 
 @push('js')
-    <script>
-       document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        fetch("{{ url('admin/dashboard/stats') }}")
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            fetch("{{ route('admin.dashboard.stats') }}")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalArtikel').innerHTML = data.totalArtikel;
+                    document.getElementById('totalPublished').innerHTML = data.totalPublished;
+                    document.getElementById('totalUser').innerHTML = data.totalUser;
+                    document.getElementById('totalKategori').innerHTML = data.totalKategori;
+                })
+                .catch(error => console.error('Error fetching dashboard stats:', error));
+        }, 100);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch("{{ route('admin.dashboard.chart.data') }}")
             .then(response => response.json())
             .then(data => {
-                document.getElementById('totalArtikel').innerHTML = data.totalArtikel;
-                document.getElementById('totalPublished').innerHTML = data.totalPublished;
-                document.getElementById('totalUser').innerHTML = data.totalUser;
-                document.getElementById('totalKategori').innerHTML = data.totalKategori;
-            })
-            .catch(error => console.error('Error fetching dashboard stats:', error));
-    }, 100);
-});
-    </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    fetch("{{ route('chart.data') }}")
-        .then(response => response.json())
-        .then(data => {
-            const ctx = document.getElementById('viewChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Jumlah View',
-                        data: data.values,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1,
-                        borderRadius: 5,
-                        barThickness: 30,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                const ctx = document.getElementById('viewChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Jumlah View',
+                            data: data.values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                            barThickness: 30,
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            display: false
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            document.getElementById('chart-container').style.display = 'none'; // hide spinner
-            document.getElementById('viewChart').style.display = 'block'; // show canvas
-        })
-        .catch(error => {
-            console.error('Error fetching chart data:', error);
-            document.getElementById('chart-container').innerHTML = '<p class="text-danger">Gagal memuat grafik.</p>';
-        });
-});
+                document.getElementById('chart-container').style.display = 'none';
+                document.getElementById('viewChart').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+                document.getElementById('chart-container').innerHTML = '<p class="text-danger">Gagal memuat grafik.</p>';
+            });
+    });
 </script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        fetch("{{ route('chart.articles') }}") // Ganti dengan route kamu
+        fetch("{{ route('admin.dashboard.chart.articles') }}")
             .then(response => response.json())
             .then(data => {
                 const ctx = document.getElementById('articleChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: data.labels, // contoh: ["Januari", "Februari", "Maret", ...]
+                        labels: data.labels,
                         datasets: [{
                             label: 'Jumlah Artikel',
-                            data: data.data, // contoh: [5, 8, 12, 7, ...]
+                            data: data.data,
                             backgroundColor: 'rgba(75, 192, 192, 0.5)',
                             borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 1,
@@ -313,25 +315,25 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 });
-    
-                document.getElementById('chart-container').style.display = 'none'; 
+
+                document.getElementById('chart-container').style.display = 'none';
                 document.getElementById('articleChart').style.display = 'block';
             })
             .catch(error => {
-                console.error('Error fetching chart data:', error);
+                console.error('Error fetching article chart:', error);
                 document.getElementById('chart-container').innerHTML = '<p class="text-danger">Gagal memuat grafik.</p>';
             });
     });
-    </script>
+</script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('articles/fetch')
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch("{{ route('admin.dashboard.articles.fetch') }}")
             .then(response => response.json())
             .then(data => {
                 let tbody = document.getElementById('articleBody');
-                tbody.innerHTML = ''; // Hapus skeleton loader
-    
+                tbody.innerHTML = '';
+
                 if (data.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4" class="text-center">Tidak ada artikel.</td></tr>`;
                 } else {
@@ -355,13 +357,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data.</td></tr>`;
             });
     });
-    </script>
-    
-
-<script>
-    $(document).ready(function() {
-     $('#dataTable').DataTable();
- });
 </script>
 
+<script>
+    $(document).ready(function () {
+        $('#dataTable').DataTable();
+    });
+</script>
 @endpush

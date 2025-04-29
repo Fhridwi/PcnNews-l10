@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
 
+    public function index()
+{
+    $users = User::latest()->take(10)->get(); 
+
+    return view('backend.dashboard.dashboard', compact('users'));
+}
+
     public function getDashboardStats()
     {
         $stats = [
